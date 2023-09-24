@@ -29,8 +29,6 @@ posts = [
     },
 ]
 
-users = []
-
 database.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -75,29 +73,14 @@ def add_post(post: PostSchema):
 @app.get("/users/", response_model=list[UserSchema])
 def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     users = crud.get_users(db, skip=skip, limit=limit)
-    return users
-
-@app.post("/user/signup", tags=["users"])
-def user_signup(user: UserSchema = Body(default=None)):
-    if user in users:
-        raise HTTPException(status_code=405, detail="User already exists.")
-    users.append(user)
-    return user
-
-def check_user(data: UserLoginSchema):
-    for user in users:
-        if user.email == data.email and user.password == data.password:
-            return True
-        return False
+    return users    
     
 @app.post("/user/login", tags=["users"])
-def user_login(user: UserLoginSchema = Body(default=None)):
-    if check_user(user):
+def user_login(user: UserLoginSchema, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
+    if db_user and db_user.email == user.email:   
         return signJWT(user.email)
-    else:
-        return {
-            "error": "Invalid Login Details."
-        }
+    raise HTTPException(status_code=404, detail="Invalid Details.")
     
 @app.post("/users/", response_model=UserSchema, tags=["users"])
 def create_user(user: UserCreateSchema, db: Session = Depends(get_db)):

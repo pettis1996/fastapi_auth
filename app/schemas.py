@@ -48,6 +48,6 @@ class UserLoginSchema(BaseModel):
         the_schema = {
             "user_demo": {  
                 "email": "john@doe.com",
-                "password": "password",
+                "password": "password"
             }
         }
