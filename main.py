@@ -1,10 +1,14 @@
 import uvicorn
 from fastapi import Body, FastAPI, Depends, HTTPException
-
-from app.model import PostSchema, UserSchema, UserLoginSchema   
+from sqlalchemy.orm import Session
+from app.schemas import PostSchema, UserSchema, UserLoginSchema   
 
 from app.auth.jwt_handler import signJWT
 from app.auth.jwt_bearer import jwtBearer
+from app.crud import create_user, get_user_by_email
+from app.models import User,Post
+from app.schemas import UserSchema
+from app.database import SessionLocal, engine
 
 posts = [
     {
@@ -27,6 +31,14 @@ posts = [
 users = []
 
 app = FastAPI()
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 @app.get("/", tags=["test"])
 def greet():
@@ -82,3 +94,10 @@ def user_login(user: UserLoginSchema = Body(default=None)):
         return {
             "error": "Invalid Login Details."
         }
+@app.post("/users/", response_model=UserSchema, tags=["users"])
+def create_user(user: UserSchema, db: Session = Depends(get_db)):
+    db_user = get_user_by_email(db, email=user.email)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+    return create_user(db=db, user=user)
+

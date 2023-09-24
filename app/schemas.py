@@ -1,9 +1,12 @@
 from pydantic import BaseModel, Field, EmailStr
 
 class PostSchema(BaseModel):
-    id: int = Field(default=None)
-    title: str = Field(default=None)
-    text: str = Field(default=None)
+    id: int 
+    title: str 
+    text: str 
+    owner_id: int
+
+   
     class Config:
         schema_extra = {
             "post_demo": {
@@ -11,23 +14,31 @@ class PostSchema(BaseModel):
                 "text": "some content here"
             }
         }
+        orm_mode = True
 
 class UserSchema(BaseModel):
-    fullname: str = Field(default=None)
-    email: EmailStr = Field(default=None)
-    password: str = Field(default=None)
+    id: int
+    fullname: str 
+    email: EmailStr 
+    password: str 
+    is_active: bool 
+    posts: list[PostSchema] = []
     class Config:
         the_schema = {
             "user_demo": {
+                "id": 1,
                 "fullname": "John",
                 "email": "john@doe.com",
                 "password": "password",
+                "is_active": True,
+                "posts": []
             },
         }
+        orm_mode=True
 
 class UserLoginSchema(BaseModel):
-    email: EmailStr = Field(default=None)
-    password: str = Field(default=None)
+    email: EmailStr 
+    password: str 
     class Config:
         the_schema = {
             "user_demo": {  
