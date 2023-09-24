@@ -36,6 +36,11 @@ class UserSchema(BaseModel):
         }
         orm_mode=True
 
+class UserCreateSchema(UserSchema):
+    fullname: str 
+    email: EmailStr
+    password: str
+
 class UserLoginSchema(BaseModel):
     email: EmailStr 
     password: str 

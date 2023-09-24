@@ -5,10 +5,11 @@ from app.schemas import PostSchema, UserSchema, UserLoginSchema
 
 from app.auth.jwt_handler import signJWT
 from app.auth.jwt_bearer import jwtBearer
-from app.crud import create_user, get_user_by_email
+from app import crud
 from app.models import User,Post
-from app.schemas import UserSchema
+from app.schemas import UserSchema, UserCreateSchema
 from app.database import SessionLocal, engine
+from app import database
 
 posts = [
     {
@@ -29,6 +30,8 @@ posts = [
 ]
 
 users = []
+
+database.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
@@ -94,10 +97,11 @@ def user_login(user: UserLoginSchema = Body(default=None)):
         return {
             "error": "Invalid Login Details."
         }
+    
 @app.post("/users/", response_model=UserSchema, tags=["users"])
-def create_user(user: UserSchema, db: Session = Depends(get_db)):
-    db_user = get_user_by_email(db, email=user.email)
+def create_user(user: UserCreateSchema, db: Session = Depends(get_db)):
+    db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return create_user(db=db, user=user)
+    return crud.create_user(db=db, user=user)
 
