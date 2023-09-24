@@ -72,8 +72,9 @@ def add_post(post: PostSchema):
         "info": "Post Added."
     }
 
-@app.get("/user", tags=["users"])
-def get_users():
+@app.get("/users/", response_model=list[UserSchema])
+def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
     return users
 
 @app.post("/user/signup", tags=["users"])
